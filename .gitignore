@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+foo.csv
 !R
 R/*/*
 man/*
