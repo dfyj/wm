@@ -26,10 +26,10 @@
 )
 
 .frequency_to_annual_factor <-
-  .frequency_config$annual_factor %>% setNames(.frequency_config$freq)
+  setNames(.frequency_config$annual_factor, .frequency_config$freq)
 
 .frequency_to_xts_apply_func <-
-  .frequency_config$xts_apply_func %>% setNames(.frequency_config$freq)
+  setNames(.frequency_config$xts_apply_func, .frequency_config$freq)
 
 .frequency_list <-
   names(.frequency_to_xts_apply_func)

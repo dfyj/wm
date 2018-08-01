@@ -1,4 +1,31 @@
 
+#' Dygraph ohlcv chart
+#'
+#' @param ohlcv
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' dygraph_ohlcv(ohlcv)
+dygraph_ohlcv <- function(ohlcv){
+  stopifnot(all(
+    is.data.frame(ohlcv),
+    c(.datetime_col, .ohlcv_names) %in% colnames(ohlcv)
+  ))
+
+  ohlcv %>%
+    select(c(.datetime_col, .ohlcv_names)) %>%
+    df_to_xts() %>%
+    dygraph() %>%
+    dyAxis("y", valueRange = c(min(ohlcv$close)*0.7, max(ohlcv$close))) %>%
+    dyAxis("y2", valueRange = c(0, 2*max(ohlcv$volume))) %>%
+    dyCandlestickGroup(c('open', 'high', 'low', 'close')) %>%
+    dyBarSeries("volume", axis = "y2") %>%
+    dyRangeSelector() %>%
+    dyCrosshair()
+}
+
 #' Plotly ohlc chart
 #'
 #' @param ohlc
@@ -7,17 +34,19 @@
 #' @export
 #'
 #' @examples
-#' plotly_ohlc(ohlcv)
+#' plotly_ohlc(ohlcv %>% tail(100))
 plotly_ohlc <- function(ohlc){
   stopifnot(all(
     is.data.frame(ohlc),
-    c(.ohlc_names, .datetime_col) %in% colnames(ohlc)
+    c(.datetime_col, .ohlc_names) %in% colnames(ohlc)
     ))
 
   ohlc %>%
     plot_ly(x = ~DATETIME, type="candlestick",
             open = ~open, close = ~close,
-            high = ~high, low = ~low
+            high = ~high, low = ~low,
+            increasing = list(line = list(color = "red")),
+            decreasing = list(line = list(color = "green"))
     )
 }
 
@@ -52,7 +81,8 @@ plotly_ohlcv <- function(ohlcv){
     heights = c(0.7,0.2),
     nrows = 2,
     shareX = TRUE,
-    titleY = TRUE)
+    titleY = TRUE) %>%
+    plotly::layout(showlegend = FALSE)
 }
 
 #' Plot theme with no axis title
