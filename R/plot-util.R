@@ -1,4 +1,5 @@
 
+<<<<<<< HEAD
 #' Plotly ohlc chart
 #'
 #' @param ohlc
@@ -56,6 +57,8 @@ plotly_ohlcv <- function(ohlcv){
     layout(leg)
 }
 
+=======
+>>>>>>> 013440dc71df9a673fd7fa8009d1494ffd752f61
 #' Plot theme with no axis title
 #'
 #' @return
