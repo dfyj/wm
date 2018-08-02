@@ -60,7 +60,7 @@ metrics_risk_ret <- function(ret){
 #'
 #' @examples
 #' metrics_risk_CAMP(Ra, Rb)
-metrics_risk_CAMP <- function(Ra, Rb){
+metrics_risk_CAPM <- function(Ra, Rb){
   stopifnot(is.xts(Ra), is.xts(Rb), ncol(Rb) == 1)
 
   # Align Ra and Rb
@@ -69,8 +69,13 @@ metrics_risk_CAMP <- function(Ra, Rb){
   Ra <- merged[, -ncol(merged)]
   Rb <- merged[,  ncol(merged)]
 
+  alpha_beta_sig = attr_alpha_beta(Ra,Rb)
+
   tibble(
-    Beta = CAPM.beta(Ra,Rb),
+    alpha = alpha_beta_sig[[1, "mean"]],
+    alpha显著性 = alpha_beta_sig[[1, "sig"]],
+    beta = alpha_beta_sig[[2, "mean"]],
+    beta显著性 = alpha_beta_sig[[2, "sig"]],
     IR = InformationRatio(Ra, Rb),
     相关系数 = cor(Ra, Rb, method = "pearson", use = "pairwise.complete.obs")[[1]]
   )
@@ -106,4 +111,27 @@ metrics_risk_TM <- function(Ra, Rb){
     TM.alpha = mt[[1, "Alpha"]]
   )
 }
+
+
+#' Fund metrics based on alpha only
+#'
+#' @param Ra fund return
+#' @param Rf excess return
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' metrics_risk_TM(Ra, 0.02)
+metrics_alpha_only <- function(Ra, Rf = 0){
+  stopifnot(is.xts(Ra))
+
+  alpha_sig = attr_alpha(Ra,Rf)
+
+  tibble(
+    alpha_only = alpha_sig[["mean"]],
+    alpha_only显著性 = alpha_sig[["sig"]]
+  )
+}
+
 

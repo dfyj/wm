@@ -54,7 +54,7 @@ f_get_weekly_ret <- function(df) {
     Return.calculate
 }
 
-f_calc_port_metrics <-  function(df, Rb) {
+f_calc_port_metrics <-  function(df, Rb, Rf = 0) {
   ret.weekly <-
     df %>%
     f_get_weekly_ret
@@ -64,93 +64,30 @@ f_calc_port_metrics <-  function(df, Rb) {
               起始日 = min(DATETIME),
               净值截止日 = max(DATETIME)),
     metrics_risk_ret(ret.weekly),
-    metrics_risk_CAMP(ret.weekly, Rb),
-    metrics_risk_TM(ret.weekly, Rb)
+    metrics_risk_CAPM(ret.weekly, Rb),
+    metrics_risk_TM(ret.weekly, Rb),
+    metrics_alpha_only(ret.weekly, Rf)
   )
 }
 
 # df <- nav_df_list[[1]]
 # f_calc_port_metrics(df, Rb)
 
-risk_ret_result <- map_df(nav_df_list, f_calc_port_metrics, Rb, .id = "产品")
-
-
-# attribution based on alpha and beta------------------------------------------------------
-
-f_calc_alpha_beta <-  function(df, Rb) {
-  ret.weekly <-
-    df %>%
-    f_get_weekly_ret
-
-  alpha_beta_sig = attr_alpha_beta(ret.weekly,Rb)
-
-  bind_cols(
-    summarise(df,
-              起始日 = min(DATETIME),
-              净值截止日 = max(DATETIME)),
-    alpha = alpha_beta_sig[1, "mean"],
-    alpha显著性 = alpha_beta_sig[1, "sig"],
-    beta = alpha_beta_sig[2, "mean"],
-    beta显著性 = alpha_beta_sig[2, "sig"]
-  )
-}
-
-alpha_beta_result <- map_df(nav_df_list, f_calc_alpha_beta, Rb, .id = "产品")
-
-
-# attribution based on alpha_only -----------------------------------------
-
-f_calc_alpha_only <-  function(df, Rf = 0) {
-  ret.weekly <-
-    df %>%
-    f_get_weekly_ret
-
-  alpha_sig = attr_alpha(ret.weekly,Rf)
-
-  bind_cols(
-    summarise(df,
-              起始日 = min(DATETIME),
-              净值截止日 = max(DATETIME)),
-    alpha = alpha_sig["mean"],
-    alpha显著性 = alpha_sig["sig"]
-  )
-}
-
-alpha_only_result <- map_df(nav_df_list, f_calc_alpha_only, Rf = 0, .id = "产品")
-
+result <- map_df(nav_df_list, f_calc_port_metrics, Rb, .id = "产品")
 
 
 # export data -------------------------------------------------------------
 
 .dir <- dirname(nav_file_path)
 
-risk_ret_result %>%
+result %>%
   write.csv(
-    file.path(.dir, "致远组合风险收益分析.csv"),
+    file.path(.dir, "致远组合分析.csv"),
     fileEncoding = "gbk", row.names = FALSE)
 
-alpha_beta_result %>%
-  write.csv(
-    file.path(.dir, "致远组合alpha_beta分析.csv"),
-    fileEncoding = "gbk", row.names = FALSE)
-
-alpha_only_result %>%
-  write.csv(
-    file.path(.dir, "致远组合alpha_only分析.csv"),
-    fileEncoding = "gbk", row.names = FALSE)
-
-risk_ret_result %>%
+result %>%
   rds_write(
     file.path(.dir, "致远组合风险收益分析.rds"))
-
-alpha_beta_result %>%
-  rds_write(
-    file.path(.dir, "致远组合alpha_beta分析.rds"))
-
-alpha_only_result %>%
-  rds_write(
-    file.path(.dir, "致远组合alpha_only分析.rds"))
-
 
 nav_df %>%
   rds_write(
