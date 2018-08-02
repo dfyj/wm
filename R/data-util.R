@@ -377,6 +377,17 @@ sum_top_n <- function(vec, n){
   top
 }
 
-hello <- function(){
-  print("hello world")
+#' transpose and cbind list of data frames
+#'
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+df_t_bind_cols <- function(...){
+  list(...) %>%
+    keep(is.data.frame) %>%
+    map(t) %>%
+    bind_cols()
 }

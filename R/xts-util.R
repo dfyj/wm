@@ -143,3 +143,18 @@ xts_annual_factor <- function(ts){
   .frequency_to_annual_factor[[xts_freq(ts)]]
 }
 
+#' Convert xts to nested tibble
+#'
+#' @param ts N-column xts
+#' @param name name of list-column (1xN)
+#'
+#' @return
+#' @export
+#'
+#' @examples
+xts_to_df_nest <- function(ts, name){
+  name = enquo(name)
+  ts %>%
+    xts_to_df() %>%
+    nest(-DATETIME, .key = !!name)
+}
