@@ -73,9 +73,9 @@ metrics_risk_CAPM <- function(Ra, Rb){
 
   tibble(
     alpha = alpha_beta_sig[[1, "mean"]],
-    alpha显著性 = alpha_beta_sig[[1, "sig"]],
+    alpha显著性 = alpha_beta_sig[[1, "sig_sym"]],
     beta = alpha_beta_sig[[2, "mean"]],
-    beta显著性 = alpha_beta_sig[[2, "sig"]],
+    beta显著性 = alpha_beta_sig[[2, "sig_sym"]],
     IR = InformationRatio(Ra, Rb),
     相关系数 = cor(Ra, Rb, method = "pearson", use = "pairwise.complete.obs")[[1]]
   )
@@ -130,8 +130,6 @@ metrics_alpha_only <- function(Ra, Rf = 0){
 
   tibble(
     alpha_only = alpha_sig[["mean"]],
-    alpha_only显著性 = alpha_sig[["sig"]]
+    alpha_only显著性 = alpha_sig[["sig_sym"]]
   )
 }
-
-
