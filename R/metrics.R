@@ -10,16 +10,14 @@
 #'
 #' @examples
 
-library(PerformanceAnalytics)
-metrics_weekly_ret <- function(ret){
+metrics_risk_ret <- function(ret){
   stopifnot(is.xts(ret), ncol(ret) == 1, xts_freq(ret) == "weekly")
 
   ret <- na.omit(ret)
 
   ret_df <- ret %>% setNames("Ra") %>% xts_to_df()
 
-  ret_up <- ret[ret > 0]
-  ret_dn <- ret[ret < 0]
+  ret_up_dn <- ret %>% split(ifelse(ret >= 0, "up", "dn"))
 
   DD <- table.Drawdowns(ret, top = 1)
 
@@ -40,19 +38,19 @@ metrics_weekly_ret <- function(ret){
       累计收益率 = Return.cumulative(ret)[[1, 1]],
       年化复合收益率 = Return.annualized(ret)[[1, 1]],
       年化波动率 =  sd.annualized(ret),
-      年化上行波动率 =  ifelse(length(ret_up) <= 1, NA, sd.annualized(ret_up)),
-      年化下行波动率 =  ifelse(length(ret_dn) <= 1, NA, sd.annualized(ret_up)),
+      年化上行波动率 =  ifelse(length(ret_up_dn[["up"]]) <= 1, NA, sd.annualized(ret_up_dn[["up"]])),
+      年化下行波动率 =  ifelse(length(ret_up_dn[["dn"]]) <= 1, NA, sd.annualized(ret_up_dn[["dn"]])),
       峰度 = kurtosis(ret),
       偏度 = skewness(ret),
       VaR0.95 = VaR(ret, p = 0.95),
       VaR0.99 = VaR(ret, p = 0.99),
-      Sharpe = SharpeRatio(ret, Rf = 0, p = 0.95,FUN = "StdDev",annualize = TRUE),
+      Sharpe = SharpeRatio(ret, Rf = 0, p = 0.95, FUN = "StdDev", annualize = TRUE),
       Sortino = SortinoRatio(ret) * sqrt(.frequency_to_annual_factor[['weekly']]),
       Calmar = CalmarRatio(ret)
     )
 }
 
-#' Fund metrics based on a benchmark
+#' Fund metrics based on CAPM model
 #'
 #' @param Ra fund return
 #' @param Rb benchmark return
@@ -61,8 +59,36 @@ metrics_weekly_ret <- function(ret){
 #' @export
 #'
 #' @examples
-#' metrics_bm_based(Ra, Rb)
-metrics_bm_based <- function(Ra, Rb){
+#' metrics_risk_CAMP(Ra, Rb)
+metrics_risk_CAMP <- function(Ra, Rb){
+  stopifnot(is.xts(Ra), is.xts(Rb), ncol(Rb) == 1)
+
+  # Align Ra and Rb
+  merged <- merge.xts(Ra, Rb, join = "left" ) %>%
+    na.omit()
+  Ra <- merged[, -ncol(merged)]
+  Rb <- merged[,  ncol(merged)]
+
+  tibble(
+    Beta = CAPM.beta(Ra,Rb),
+    IR = InformationRatio(Ra, Rb),
+    相关系数 = cor(Ra, Rb, method = "pearson", use = "pairwise.complete.obs")[[1]]
+  )
+}
+
+
+
+#' Fund metrics based on TM model
+#'
+#' @param Ra fund return
+#' @param Rb benchmark return
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' metrics_risk_TM(Ra, Rb)
+metrics_risk_TM <- function(Ra, Rb){
   stopifnot(is.xts(Ra), is.xts(Rb), ncol(Rb) == 1)
 
   # Align Ra and Rb
@@ -74,13 +100,10 @@ metrics_bm_based <- function(Ra, Rb){
   mt <- MarketTiming(Ra, Rb)
 
   tibble(
-    Beta = CAPM.beta(Ra, Rb),
-    IR = InformationRatio(Ra, Rb),
-    相关系数 = cor(Ra, Rb, method = "pearson", use = "pairwise.complete.obs")[[1]],
 
-    # 择时择股a（TM模型）
-    beta1 = mt[[1, "Beta"]],
-    beta2 = mt[[1, "Gamma"]],
-    alpha = mt[[1, "Alpha"]]
+    TM.beta1 = mt[[1, "Beta"]],
+    TM.beta2 = mt[[1, "Gamma"]],
+    TM.alpha = mt[[1, "Alpha"]]
   )
 }
+
