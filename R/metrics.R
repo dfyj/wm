@@ -9,6 +9,8 @@
 #' @export
 #'
 #' @examples
+
+library(PerformanceAnalytics)
 metrics_weekly_ret <- function(ret){
   stopifnot(is.xts(ret), ncol(ret) == 1, xts_freq(ret) == "weekly")
 
@@ -38,14 +40,14 @@ metrics_weekly_ret <- function(ret){
       累计收益率 = Return.cumulative(ret)[[1, 1]],
       年化复合收益率 = Return.annualized(ret)[[1, 1]],
       年化波动率 =  sd.annualized(ret),
-      年化上行波动率 =  sd.annualized(ret_up),
-      年化下行波动率 =  sd.annualized(ret_dn),
+      年化上行波动率 =  ifelse(length(ret_up) <= 1, NA, sd.annualized(ret_up)),
+      年化下行波动率 =  ifelse(length(ret_dn) <= 1, NA, sd.annualized(ret_up)),
       峰度 = kurtosis(ret),
       偏度 = skewness(ret),
       VaR0.95 = VaR(ret, p = 0.95),
       VaR0.99 = VaR(ret, p = 0.99),
-      Sharpe = SharpeRatio(ret, Rf = 0, p = 0.95,FUN = "StdDev"),
-      Sortino = SortinoRatio(ret),
+      Sharpe = SharpeRatio(ret, Rf = 0, p = 0.95,FUN = "StdDev",annualize = TRUE),
+      Sortino = SortinoRatio(ret) * sqrt(.frequency_to_annual_factor[['weekly']]),
       Calmar = CalmarRatio(ret)
     )
 }
