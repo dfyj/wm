@@ -10,7 +10,7 @@
 #'
 #' @examples
 
-metrics_risk_ret <- function(ret){
+metrics_risk_ret <- function(ret, Rf = 0){
   stopifnot(is.xts(ret), ncol(ret) == 1, xts_freq(ret) == "weekly")
 
   ret <- na.omit(ret)
@@ -20,6 +20,8 @@ metrics_risk_ret <- function(ret){
   ret_up_dn <- ret %>% split(ifelse(ret >= 0, "up", "dn"))
 
   DD <- table.Drawdowns(ret, top = 1)
+
+  alpha_sig <- attr_alpha(ret, Rf)
 
   ret_df %>%
     summarise(
@@ -46,7 +48,9 @@ metrics_risk_ret <- function(ret){
       VaR0.99 = VaR(ret, p = 0.99),
       Sharpe = SharpeRatio(ret, Rf = 0, p = 0.95, FUN = "StdDev", annualize = TRUE),
       Sortino = SortinoRatio(ret) * sqrt(.frequency_to_annual_factor[['weekly']]),
-      Calmar = CalmarRatio(ret)
+      Calmar = CalmarRatio(ret),
+      绝对收益 = alpha_sig[["mean"]] * sqrt(.frequency_to_annual_factor[['weekly']]),
+      绝对收益显著性 = alpha_sig[["sig_sym"]]
     )
 }
 
@@ -72,8 +76,8 @@ metrics_risk_CAPM <- function(Ra, Rb){
   alpha_beta_sig = attr_alpha_beta(Ra,Rb)
 
   tibble(
-    alpha = alpha_beta_sig[[1, "mean"]],
-    alpha显著性 = alpha_beta_sig[[1, "sig_sym"]],
+    超额收益 = alpha_beta_sig[[1, "mean"]] * sqrt(.frequency_to_annual_factor[['weekly']]),
+    超额收益显著性 = alpha_beta_sig[[1, "sig_sym"]],
     beta = alpha_beta_sig[[2, "mean"]],
     beta显著性 = alpha_beta_sig[[2, "sig_sym"]],
     IR = InformationRatio(Ra, Rb),
@@ -109,27 +113,5 @@ metrics_risk_TM <- function(Ra, Rb){
     TM.beta1 = mt[[1, "Beta"]],
     TM.beta2 = mt[[1, "Gamma"]],
     TM.alpha = mt[[1, "Alpha"]]
-  )
-}
-
-
-#' Fund metrics based on alpha only
-#'
-#' @param Ra fund return
-#' @param Rf excess return
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#' metrics_risk_TM(Ra, 0.02)
-metrics_alpha_only <- function(Ra, Rf = 0){
-  stopifnot(is.xts(Ra))
-
-  alpha_sig = attr_alpha(Ra,Rf)
-
-  tibble(
-    alpha_only = alpha_sig[["mean"]],
-    alpha_only显著性 = alpha_sig[["sig_sym"]]
   )
 }

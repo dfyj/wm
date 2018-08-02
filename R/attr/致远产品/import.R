@@ -65,8 +65,7 @@ f_calc_port_metrics <-  function(df, Rb, Rf = 0) {
               净值截止日 = max(DATETIME)),
     metrics_risk_ret(ret.weekly),
     metrics_risk_CAPM(ret.weekly, Rb),
-    metrics_risk_TM(ret.weekly, Rb),
-    metrics_alpha_only(ret.weekly, Rf)
+    metrics_risk_TM(ret.weekly, Rb)
   )
 }
 
