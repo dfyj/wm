@@ -47,9 +47,9 @@ metrics_risk_ret <- function(ret, Rf = 0){
       VaR0.95 = VaR(ret, p = 0.95),
       VaR0.99 = VaR(ret, p = 0.99),
       Sharpe = SharpeRatio(ret, Rf = 0, p = 0.95, FUN = "StdDev", annualize = TRUE),
-      Sortino = SortinoRatio(ret) * sqrt(.frequency_to_annual_factor[['weekly']]),
+      Sortino = annualize_vol(SortinoRatio(ret), 'weekly'),
       Calmar = CalmarRatio(ret),
-      绝对收益 = alpha_sig[["mean"]] * sqrt(.frequency_to_annual_factor[['weekly']]),
+      年化绝对收益 = annualize_ret(alpha_sig[["mean"]],'weekly'),
       绝对收益显著性 = alpha_sig[["sig_sym"]]
     )
 }
@@ -76,7 +76,7 @@ metrics_risk_CAPM <- function(Ra, Rb){
   alpha_beta_sig = attr_alpha_beta(Ra,Rb)
 
   tibble(
-    超额收益 = alpha_beta_sig[[1, "mean"]] * sqrt(.frequency_to_annual_factor[['weekly']]),
+    年化超额收益 = annualize_ret(alpha_beta_sig[[1, "mean"]],'weekly'),
     超额收益显著性 = alpha_beta_sig[[1, "sig_sym"]],
     beta = alpha_beta_sig[[2, "mean"]],
     beta显著性 = alpha_beta_sig[[2, "sig_sym"]],
@@ -114,4 +114,30 @@ metrics_risk_TM <- function(Ra, Rb){
     TM.beta2 = mt[[1, "Gamma"]],
     TM.alpha = mt[[1, "Alpha"]]
   )
+}
+
+#' annualize return
+#'
+#' @param ret
+#' @param freq frequency of retturn
+#'
+#' @return
+#' @export
+#'
+#' @examples
+annualize_ret <- function(ret, freq){
+  annualized_ret <- ret * .frequency_to_annual_factor[[freq]]
+}
+
+#' annualize volatility
+#'
+#' @param vol
+#' @param freq frequency of volatility
+#'
+#' @return
+#' @export
+#'
+#' @examples
+annualize_vol <- function(vol, freq){
+  annualized_vol <- vol * sqrt(.frequency_to_annual_factor[[freq]])
 }
