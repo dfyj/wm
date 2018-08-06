@@ -289,14 +289,15 @@ wsd_ohlc <- function(codes, start, end, fields = c("open", "high", "low", "close
     select(.datetime_col, code, fields)
 }
 
-wsd_price_full_history <- function(codes, as_of){
+wsd_price_full_history <- function(codes, as_of, options = "period=W;PriceAdj=F"){
   as_of <- as.character(as_of)
 
   universe <- tibble::tibble(code = codes) %>%
     dplyr::mutate(
       field = wsd_price_field(code),
       start = wsd_start_date(code, as_of),
-      end = as_of
+      end = as_of,
+      options = options
     )
 
   universe %>%
