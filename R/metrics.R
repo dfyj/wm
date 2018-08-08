@@ -10,7 +10,7 @@
 #'
 #' @examples
 
-metrics_risk_ret <- function(ret, Rf = 0){
+metrics_risk_ret <- function(ret, Rf = 0, geometric = TRUE){
   stopifnot(is.xts(ret), ncol(ret) == 1, xts_freq(ret) == "weekly")
 
   ret <- na.omit(ret)
@@ -49,7 +49,7 @@ metrics_risk_ret <- function(ret, Rf = 0){
       Sharpe = SharpeRatio(ret, Rf = 0, p = 0.95, FUN = "StdDev", annualize = TRUE),
       Sortino = annualize_vol(SortinoRatio(ret), 'weekly'),
       Calmar = CalmarRatio(ret),
-      年化绝对收益 = annualize_ret(alpha_sig[["mean"]],'weekly'),
+      年化绝对收益 = annualize_ret(alpha_sig[["mean"]], 'weekly', geometric),
       绝对收益显著性 = alpha_sig[["sig_sym"]]
     )
 }
@@ -64,7 +64,7 @@ metrics_risk_ret <- function(ret, Rf = 0){
 #'
 #' @examples
 #' metrics_risk_CAMP(Ra, Rb)
-metrics_risk_CAPM <- function(Ra, Rb){
+metrics_risk_CAPM <- function(Ra, Rb, geometric = TRUE){
   stopifnot(is.xts(Ra), is.xts(Rb), ncol(Rb) == 1)
 
   # Align Ra and Rb
@@ -76,7 +76,7 @@ metrics_risk_CAPM <- function(Ra, Rb){
   alpha_beta_sig = attr_alpha_beta(Ra,Rb)
 
   tibble(
-    年化超额收益 = annualize_ret(alpha_beta_sig[[1, "mean"]],'weekly'),
+    年化超额收益 = annualize_ret(alpha_beta_sig[[1, "mean"]], 'weekly', geometric),
     超额收益显著性 = alpha_beta_sig[[1, "sig_sym"]],
     beta = alpha_beta_sig[[2, "mean"]],
     beta显著性 = alpha_beta_sig[[2, "sig_sym"]],
@@ -125,8 +125,10 @@ metrics_risk_TM <- function(Ra, Rb){
 #' @export
 #'
 #' @examples
-annualize_ret <- function(ret, freq){
-  annualized_ret <- ret * .frequency_to_annual_factor[[freq]]
+annualize_ret <- function(ret, freq, geometric = TRUE){
+  ifelse(geometric,
+  annualized_ret <- (1 + ret) ^ .frequency_to_annual_factor[[freq]] - 1,
+  annualized_ret <- ret * .frequency_to_annual_factor[[freq]])
 }
 
 #' annualize volatility

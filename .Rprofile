@@ -17,6 +17,7 @@
   library(plotly)
   library(PerformanceAnalytics)
   library(bizdays)
+  library(readxl)
   logging::basicConfig()
 
   load_calendar(file.path("~/.R/calendars/SSE.cal"))
