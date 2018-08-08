@@ -1,11 +1,9 @@
-library(readxl)
-
-
 # import ------------------------------------------------------------------
 
 nav_file_path <- "./attr/致远产品/致远产品日净值表20180727（仅供内部参考）.xlsx"
 
 bm <- "000905.SH"
+
 
 products <- readxl::excel_sheets(nav_file_path)
 
@@ -29,7 +27,7 @@ nav_df_list <- products %>%
 
 nav_df <-
   nav_df_list %>%
-  bind_rows( , .id = "product")
+  bind_rows(., .id = "product")
 
 # diagnostics
 

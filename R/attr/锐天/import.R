@@ -1,29 +1,29 @@
+library(dplyr)
+library(tidyr)
 # import ------------------------------------------------------------------
 
 nav_file_path <- "./attr/锐天/锐天净值更新20180720.xlsx"
 
 bm <- "000905.SH"
 
-nav_df <- read_excel(nav_file_path,col_types = c("text",rep("numeric", 13)))
+nav_df <-
+  read_excel(nav_file_path, col_types = c("text", rep("numeric", 13)))
+
 name_vector <- colnames(nav_df)
-name_vector <- name_vector[c(1,3,5,7,9,11,13)]
-nav_df <- nav_df[-1,] %>%
-  select(1,2,4,6,8,10,12,14) %>%
-  setNames(c("DATETIME",name_vector))%>%
+name_vector <- name_vector[seq(1, ncol(nav_df) - 1, 2)]
+
+nav_df <- nav_df[-1, ] %>%
+  select(1, seq(2, ncol(nav_df), 2)) %>%
+  setNames(c("DATETIME", name_vector)) %>%
   mutate(DATETIME = as.character(lubridate::parse_date_time(DATETIME, "%y%m%d")))
 
 nav_df[nav_df <= 0] <- NA
-nav_df_list <- list(nav_df[, c(1, 2)],
-                    nav_df[, c(1, 3)],
-                    nav_df[, c(1, 4)],
-                    nav_df[, c(1, 5)],
-                    nav_df[, c(1, 6)],
-                    nav_df[, c(1, 7)],
-                    nav_df[, c(1, 8)]
-                    ) %>%
-  setNames(name_vector)
+nav_df_list <- nav_df %>%
+  gather(product, "val", 2:ncol(nav_df))
 
-
+nav_df_list <- nav_df_list%>%
+  split(nav_df_list$product) %>%
+  lapply(function(x) x[!(names(x) %in% c("product"))])
 # diagnostics
 
 # df %>%
