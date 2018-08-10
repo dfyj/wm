@@ -1,36 +1,43 @@
 # NAV related utilities ---------------------------------------------------
 
-#' Relative NAV
-#' defined as price_a/price_b, starting from 1
+#' Relative NAV defined as nav_a/nav_b, starting from 1
 #'
-#' @param price_a product nav, xts
-#' @param price_b benchmark nav, xts
+#' @param nav_a product nav, xts
+#' @param nav_b benchmark nav, xts
 #'
 #' @return
 #' @export
 #'
 #' @examples
-nav_rel_nav <- function(price_a, price_b){
-  log_diff <- na.omit(log(price_a) - log(price_b))
-  coredata(log_diff) <- apply(coredata(log_diff), 1,
-                              function(x) x - coredata(xts::first(log_diff)))
+nav_rel_nav <- function(nav_a, nav_b){
+  log_diff <- na.omit(log(nav_a) - log(nav_b))
+  zoo::coredata(log_diff) <- apply(zoo::coredata(log_diff), 1,
+                              function(x) x - zoo::coredata(xts::first(log_diff)))
   exp(log_diff)
 }
 
 #' "Hinge" short-series NAV to long-series so they have same value
 #' on day-one of short-series
 #'
-#' @param nav_l long series NAV
-#' @param nav_s short series NAV
+#' @param nav_l long series NAV, 1-column xts
+#' @param nav_s short series NAV, 1-column xts
 #'
 #' @return
 #' @export
 #'
 #' @examples
+#' nav_hinge_short_series_to_long(nav_l, nav_s)
 nav_hinge_short_series_to_long <- function(nav_l, nav_s){
+  stopifnot(
+    is.xts(nav_l),
+    is.xts(nav_s),
+    ncol(nav_l) == 1,
+    ncol(nav_s) == 1
+    )
   # start date of short series
-  start_s <- nav_s %>% na.omit() %>% xts::first() %>% index
-  nav_s * nav_l[start_s, 1][[1]]
+  start_s <- nav_s %>% na.omit() %>% xts::first() %>% zoo::index
+  scale_factor <- nav_l[start_s, 1][[1]] / nav_s[start_s, 1][[1]]
+  nav_s * scale_factor
 }
 
 #' Calc alpha/beta decomposition metrics
