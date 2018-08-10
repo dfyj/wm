@@ -60,7 +60,8 @@ mem_wtdays <- memoise::memoise(WindR::w.tdays, cache = memoise::cache_filesystem
 .wsd_xts <- function(code, field, start, end, options = "") {
   .wsd_tidy(code, field, start, end, options) %>%
     filter_any_na_numeric() %>%
-    df_to_xts("value") %>%
+    select(DATETIME, value) %>%
+    df_to_xts() %>%
     setNames(code)
 }
 
