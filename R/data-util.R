@@ -4,18 +4,8 @@
 #' @param df A data frame. First column is date/time
 #' @return An xts object
 #' @export
-df_to_xts <- function(df, cols = c()){
-  if(length(cols) > 0)
-    df <- dplyr::select(df, 1, cols)
-
-  if(class(dplyr::pull(df, 1)) == "Date")
-    df <- dplyr::mutate_at(df, 1, as.character)
-
-  df <- as.data.frame(df)
-  # date or time index?
-  dt_func <- ifelse(lubridate::is.POSIXct(df[, 1]),
-                    as.POSIXct, as.Date)
-  xts::xts(df[, -1], dt_func(df[, 1]))
+df_to_xts <- function(df){
+  xts(df[, -1], dplyr::pull(df, 1) %>% as.Date)
 }
 
 #' Convert xts to data frame
@@ -267,6 +257,7 @@ rds_write <- function(...) {
   path <- list(...)[[2]]
   create_dir(path)
   readr::write_rds(...)
+  path
 }
 
 rds_read <- function(...) {
