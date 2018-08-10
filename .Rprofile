@@ -14,7 +14,7 @@
   library(dplyr)
   library(purrr)
   library(ggplot2)
-  library(plotly)
+  # library(plotly)
   library(PerformanceAnalytics)
   library(bizdays)
   logging::basicConfig()
