@@ -1,5 +1,5 @@
 
-# fund metrics -----------------------------------------------------------
+# fund metrics ------------------------------------------------------------
 
 #' Fund metrics that only depend on weekly return series
 #'
