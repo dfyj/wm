@@ -64,7 +64,7 @@ metrics_risk_ret <- function(ret, Rf = 0, geometric = TRUE){
 #'
 #' @examples
 #' metrics_risk_CAMP(Ra, Rb)
-metrics_risk_CAPM <- function(Ra, Rb, geometric = TRUE){
+metrics_CAPM <- function(Ra, Rb, geometric = TRUE){
   stopifnot(is.xts(Ra), is.xts(Rb), ncol(Rb) == 1)
 
   # Align Ra and Rb
@@ -97,7 +97,7 @@ metrics_risk_CAPM <- function(Ra, Rb, geometric = TRUE){
 #'
 #' @examples
 #' metrics_risk_TM(Ra, Rb)
-metrics_risk_TM <- function(Ra, Rb){
+metrics_TM <- function(Ra, Rb){
   stopifnot(is.xts(Ra), is.xts(Rb), ncol(Rb) == 1)
 
   # Align Ra and Rb
@@ -127,8 +127,8 @@ metrics_risk_TM <- function(Ra, Rb){
 #' @examples
 annualize_ret <- function(ret, freq, geometric = TRUE){
   ifelse(geometric,
-  annualized_ret <- (1 + ret) ^ .frequency_to_annual_factor[[freq]] - 1,
-  annualized_ret <- ret * .frequency_to_annual_factor[[freq]])
+  (1 + ret) ^ .frequency_to_annual_factor[[freq]] - 1,
+  ret * .frequency_to_annual_factor[[freq]])
 }
 
 #' annualize volatility
@@ -141,5 +141,5 @@ annualize_ret <- function(ret, freq, geometric = TRUE){
 #'
 #' @examples
 annualize_vol <- function(vol, freq){
-  annualized_vol <- vol * sqrt(.frequency_to_annual_factor[[freq]])
+  vol * sqrt(.frequency_to_annual_factor[[freq]])
 }
