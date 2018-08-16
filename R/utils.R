@@ -40,3 +40,20 @@ set_rownames <- function(df, rownames){
   rownames(df) <- rownames
   df
 }
+
+#' Turn input arguments into named list
+#'
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' make_list(x, y) == list(x, y)
+make_list <- function(...) {
+  args <- substitute(list(...))
+  nms <- sapply(args[-1], deparse)
+  list(...) %>%
+    setNames(nms)
+}
+

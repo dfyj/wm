@@ -63,6 +63,26 @@ xts_bt_dates <-
     ts[str_c(from_date, to_date, sep = "/")]
   }
 
+xts_merge <- function(...){
+  li <- make_list(...)
+
+  ncols <- map_dbl(li, ncol)
+
+  col_index <-
+    map2(
+      accumulate(ncols, `+`, .init = 1)[-(length(ncols)+1)],
+      accumulate(ncols, `+`),
+      seq
+    )
+
+  m <- li %>% reduce(merge)
+
+  col_index %>%
+    map(~ {m[, .] %>% setNames(names(li[[1]]))}) %>%
+    setNames(names(li))
+
+}
+
 #' Align one xts to another by date
 #'
 #' @param align_from xts object
@@ -110,7 +130,10 @@ xts_align_regularly <- function(align_from, freq = .frequency_list){
 #' f <- function(x) c(sum(x), mean(x))
 #' cols <- c("sum", "mean")
 #' merge.zoo(ts, xts_rowapply(ts, f, cols))
-xts_rowapply <- function(ts, f, cols, ...){
+xts_rowapply <- function(ts, f, cols = as.character(substitute(f)), ...){
+  if(!length(ts))
+    return(ts)
+
   ts %>% apply(1, f, ...) %>%
     t() %>%
     matrix(nrow = nrow(ts)) %>%
