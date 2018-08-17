@@ -1,4 +1,6 @@
 
+
+
 # Import ------------------------------------------------------------------
 
 codes <- c(
@@ -30,14 +32,13 @@ rebal_dates <-
 pricing_dates <-
   c(rebal_dates, last(index(daily_price))) %>% unique()
 
-ep <-
-  xts(1:nrow(daily_price), order.by = index(daily_price))[pricing_dates] %>%
-  as.vector()
-
-ep
-
 
 # target weights ----------------------------------------------------------
+
+f_tw <- function(rebal_date, md, ...){
+  w <- 1. / nrow(md)
+  tibble(weight = w)
+}
 
 tw <-
   c(0.5, 0.5) %>%
@@ -60,7 +61,7 @@ asset_ret <-
 # calc portfolio return ---------------------------------------------------
 
 tw.lag <-
-tw %>%
+  tw %>%
   lag.xts()
 
 # merge(ret, tw.lag)
@@ -97,7 +98,7 @@ f_port_ret <- function(w, r){
 
 f_merge_tbl <- function()
 
-port_ret <-
+  port_ret <-
   list(weight = tw, ret = asset_ret) %>%
   imap(f_nest) %>%
   reduce(full_join, by = .datetime_col) %>%
@@ -120,7 +121,7 @@ df_t_bind_cols <- function(...){
 }
 
 ans <-
-port_ret[1:3, ] %>%
+  port_ret[1:3, ] %>%
   mutate(data = pmap(., df_t_bind_cols))
 
 (l <- ans[[1, "data"]])
