@@ -45,3 +45,21 @@ df_group_sum <- function(df, gp, value){
     dplyr::group_by(!!gp) %>%
     dplyr::summarise(!! output_col := sum(!!value))
 }
+
+
+#' named vector to df
+#'
+#' @return
+#' @export
+#'
+#' @examples
+named_vector_to_df <- function(){
+  tibble(
+    !!name_col := names(named_vec) %||% colnames(named_vec),
+    !!value_col := named_vec %>% as.vector()
+  )
+}
+
+# df <- tibble(x = 1:5, y = letters[1:5])
+# df %>%
+#   mutate( = letters[1:5])
